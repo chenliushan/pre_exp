@@ -21,7 +21,7 @@ def clone_repo(git_url, repo_name=None):  # clone the repository to the desired 
         prepare_folders(repo_dir)
         os.system('git clone ' + git_url + ' ' + repo_dir + os.path.sep + repo_name)
     else:
-        print('The '+repo_name+' repository already exist.')
+        print('The ' + repo_name + ' repository already exist.')
     return [repo_dir, repo_name]
 
 
@@ -46,7 +46,7 @@ def prepare_properties_file(repo_tmp):  # Create the msr properties file of this
         prop_file.write(content)
         prop_file.close()
     else:
-        print('The '+repo_tmp[1]+' properties already exist.')
+        print('The ' + repo_tmp[1] + ' properties already exist.')
     return cwd + os.path.sep + prop_file_dir
 
 

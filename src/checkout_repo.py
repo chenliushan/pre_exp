@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import os
 import sys
 
 log_file = 'cd_filtered_commit.log'
@@ -16,24 +17,26 @@ def process_repo(revs_tmp):
 
 
 def checkout_rev(rev_hash):
-    print('git -C ' + repository + ' reset ' + rev_hash)
-    # os.system('git -C ' + repository + ' reset ' + rev_hash)
+    command = 'git -C ' + repository + ' reset --hard ' + rev_hash
+    print(command)
+    os.system(command)
 
 
 def cp_repository(rev_hash, new_repo_path=None):
     if new_repo_path is None:
         new_repo_path = repository[0: repository.rindex('/')] + rev_hash[0:5]
-        print(new_repo_path)
-    print('cp ' + repository + ' ' + new_repo_path)
-    # os.system('cp ' + repository + ' ' + new_repo_path)
+    command = 'cp -r ' + repository + ' ' + new_repo_path
+    print(command)
+    os.system(command)
     return new_repo_path
 
 
 def cp_test_source(new_repo_path):
     if not new_repo_path.endswith('/'):
         new_repo_path += '/'
-    print('cp ' + repository + test_source_dir + ' ' + new_repo_path + test_source_dir)
-    # os.system('cp ' + repository + test_source_dir + ' ' + new_repo_path+test_source_dir)
+    command = 'cp -r ' + repository + test_source_dir + ' ' + new_repo_path + test_source_dir
+    print(command)
+    os.system(command)
 
 
 if len(sys.argv) == 2:
@@ -48,3 +51,4 @@ for line in f:
     if repository is not None:
         revs = line.split(';')
         process_repo(revs)
+        break

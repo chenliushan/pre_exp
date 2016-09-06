@@ -26,6 +26,7 @@ def my_fun(arg1, arg2='Hei', arg3=''):
         if (arg3):
             print(arg3)
 
+
 my_fun('jana')
-my_fun('jana',arg3='lalala')
-my_fun('jana','lalala')
+my_fun('jana', arg3='lalala')
+my_fun('jana', 'lalala')
