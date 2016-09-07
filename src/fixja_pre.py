@@ -11,12 +11,17 @@ p_ProjectOutputDir = 'ProjectOutputDir'
 p_ProjectLib = 'ProjectLib'
 p_ProjectTestSourceDir = 'ProjectTestSourceDir'
 p_ProjectTestOutputDir = 'ProjectTestOutputDir'
+p_ProjectTestsToInclude = 'ProjectTestsToInclude'
+p_ProjectTestsToExclude = 'ProjectTestsToExclude'
+p_ProjectExtraClasspath = 'ProjectExtraClasspath'
+p_ProjectCompilationCommand = 'ProjectCompilationCommand'
+p_ProjectExecutionCommand = 'ProjectExecutionCommand'
 p_MethodToFix = 'MethodToFix'
 
 p_sep = ' = '
 
 p_default_JDKDir = '/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home'
-p_default_sub_LogFile = '/tmp/logs/test.log'
+p_default_sub_LogFile = '/fixja.log'
 p_default_LogLevel = 'DEBUG'
 p_default_ProjectSourceDir = 'src/main/java'
 p_default_ProjectTestSourceDir = 'src/test/java'
@@ -31,13 +36,6 @@ target_repo_path = None
 target_repo_name = None
 method_to_fix = None
 
-
-# arg1:properties file path
-# arg2:repository path
-# arg3:method to fix
-# 寻找properties file
-# 如果找不到,自动生成 properties file
-# 如果找到了,直接运行fixja
 
 def append_path(pre, post):
     if post.startswith(os.sep):
@@ -67,16 +65,17 @@ def get_mvn_dependencies(repo_path):
         x = append_path(dependency_path, x)
         if os.path.isfile(x) and x.endswith('.jar'):
             dependencies += (x + os.pathsep)
-    return dependencies[0:len(dependencies)-1]
+    return dependencies[0:len(dependencies) - 1]
 
 
 def generate_properties_file(file_path, repository_path, fix_method):
-    if os.path.isfile(file_path):
-        print(file_path + ' properties file is exist.')
-        return file_path
     if not file_path.endswith('.properties'):
         file_path = append_path(file_path, property_file_name)
     print(file_path)
+
+    # if os.path.isfile(file_path):  # Skip if there is a properties file.
+    #     print(file_path + ' properties file is exist.')
+    #     return file_path
 
     prop_file = open(file_path, 'w')
     content = p_JDKDir + p_sep + p_default_JDKDir + os.linesep + \
@@ -85,11 +84,16 @@ def generate_properties_file(file_path, repository_path, fix_method):
               p_ProjectRootDir + p_sep + repository_path + os.linesep + \
               p_ProjectSourceDir + p_sep + p_default_ProjectSourceDir + os.linesep + \
               p_ProjectTestSourceDir + p_sep + p_default_ProjectTestSourceDir + os.linesep + \
-              p_default_sub_ProjectOutputDir + p_sep + append_path(p_default_sub_ProjectOutputDir
-                                                                   , target_repo_name) + os.linesep + \
-              p_default_sub_ProjectTestOutputDir + p_sep + append_path(p_default_sub_ProjectTestOutputDir
-                                                                       , target_repo_name) + os.linesep + \
+              p_ProjectOutputDir + p_sep + append_path(p_default_sub_ProjectOutputDir
+                                                       , target_repo_name) + os.linesep + \
+              p_ProjectTestOutputDir + p_sep + append_path(p_default_sub_ProjectTestOutputDir
+                                                           , target_repo_name) + os.linesep + \
               p_MethodToFix + p_sep + fix_method + os.linesep + \
+              p_ProjectTestsToInclude + p_sep  + os.linesep + \
+              p_ProjectTestsToExclude + p_sep  + os.linesep + \
+              p_ProjectExtraClasspath + p_sep  + os.linesep + \
+              p_ProjectCompilationCommand + p_sep  + os.linesep + \
+              p_ProjectExecutionCommand + p_sep  + os.linesep + \
               p_ProjectLib + p_sep + get_mvn_dependencies(repository_path) + os.linesep
 
     prop_file.write(content)
@@ -97,11 +101,18 @@ def generate_properties_file(file_path, repository_path, fix_method):
     return file_path
 
 
+
 def run_fixja(properties_file):
     command = 'java -jar ' + fixja_jar + ' ' + arg_propery + ' ' + properties_file
     os.system(command)
-    pass
 
+# py fixja_pre.py /Users/liushanchen/Desktop/repo/repo_commons-io/tmp /Users/liushanchen/Desktop/repo/repo_commons-io/commons-io 'isBrokenSymlink(File)@org.apache.commons.io.FileUtils
+# arg1:properties file path
+# arg2:repository path
+# arg3:method to fix
+# 寻找properties file
+# 如果找不到,自动生成 properties file
+# 如果找到了,直接运行fixja
 
 if len(sys.argv) == 4:
     property_file_path = sys.argv[1]
@@ -118,7 +129,4 @@ while target_repo_path is None or not os.path.isdir(target_repo_path):
 target_repo_name = get_repo_name(target_repo_path)
 print(target_repo_name)
 property_file_path = generate_properties_file(property_file_path, target_repo_path, method_to_fix)
-#run_fixja(property_file_path)
-# 还差跑通checkout以及本pre
-# py fixja_pre.py /Users/liushanchen/Desktop/repo/repo_commons-io/tmp /Users/liushanchen/Desktop/repo/repo_commons-io/commons-io /Users/liushanchen/Desktop/repo/repo_commons-io/commons-io
-#第三个参数要调整(根据由checkout得到的输入来调整)
+run_fixja(property_file_path)

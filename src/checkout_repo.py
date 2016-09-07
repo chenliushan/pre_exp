@@ -4,7 +4,7 @@ import os
 import sys
 
 log_file = 'cd_filtered_commit.log'
-test_source_dir = 'src/test/java'
+test_source_dir = 'src/test/java/'
 repository = None
 
 
@@ -14,6 +14,9 @@ def process_repo(revs_tmp):
         new_path = cp_repository(revs_tmp[0])
         checkout_rev(revs_tmp[1])
         cp_test_source(new_path)
+        return new_path
+    else:
+        print('args are not correct:' + revs_tmp)
 
 
 def checkout_rev(rev_hash):
@@ -39,8 +42,20 @@ def cp_test_source(new_repo_path):
     os.system(command)
 
 
+def get_p_method_to_fix(method):
+    method_name_start_dix = method.rindex('.')
+    method_to_fix = method[method_name_start_dix + 1:len(method)]
+    method_to_fix += '@'
+    method_to_fix += method[0:method_name_start_dix]
+    return method_to_fix
+
+
+# py checkout_repo.py /Users/liushanchen/Desktop/repo/repo_commons-io/tmp/cd_filtered_commit.log
+# arg1:path of cd_filtered_commit.log
 if len(sys.argv) == 2:
     log_file = sys.argv[1]
+while not os.path.isfile(log_file):
+    log_file = input('Please input correct path of cd_filtered_commit.log:\n')
 
 f = open(log_file, 'r')
 for line in f:
@@ -50,5 +65,9 @@ for line in f:
         continue
     if repository is not None:
         revs = line.split(';')
-        process_repo(revs)
+        new_repo = process_repo(revs[0:2])
+        m_to_fix = get_p_method_to_fix(revs[2].rstrip('\n'))
+        tmp_path = log_file[0:log_file.rindex('/')]
+        command = 'python3 ./fixja_pre.py "' + tmp_path + '" "' + new_repo + '" "' + m_to_fix + '"'
+        os.system(command)
         break
