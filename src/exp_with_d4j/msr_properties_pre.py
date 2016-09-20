@@ -14,12 +14,14 @@ p_Defects4jDbPath = 'Defects4jDbPath'
 v_Defects4jDbPath = ['/root/test/defects4j_test/defects4j/framework/projects/Closure/commit-db',
                      '/root/test/defects4j_test/defects4j/framework/projects/Lang/commit-db',
                      '/root/test/defects4j_test/defects4j/framework/projects/Math/commit-db',
-                     '/root/test/defects4j_test/defects4j/framework/projects/Time/commit-db']
+                     '/root/test/defects4j_test/defects4j/framework/projects/Time/commit-db',
+                     '/root/test/defects4j_test/defects4j/framework/projects/Chart/commit-db']
 p_RepoName = 'RepoName'
 v_RepoName = ['closure-compiler',
               'commons-lang',
               'commons-math',
-              'joda-time']
+              'joda-time',
+              'jfreechart']
 
 file_prefix = 'msr'
 file_suffix = '.properties'

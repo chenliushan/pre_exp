@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import os
+import shutil
 
 # 1>Read the MSR output log
 # 2>Checkout the buggy rev
@@ -7,11 +8,12 @@ import os
 
 output_relevant_tests_file = 'out_relevant_tests.txt'
 output_cp_test_file = 'out_cp.txt'
+repo_folder = '/buggy_repo'
 repos = {'closure-compiler': 'Closure', 'commons-lang': 'Lang',
-         'commons-math': 'Math', 'joda-time': 'joda-time'}
+         'commons-math': 'Math', 'joda-time': 'Time'}
 
 
-def read_log(log_path):
+def read_and_process_log(log_path):
     if os.path.isfile(log_path) and log_path.endswith('.log'):
         repo_name = get_repo_name(log_path)
         with open(log_path, 'r') as file:
@@ -20,11 +22,13 @@ def read_log(log_path):
                 bug_unit = line.strip().split(';')
                 print(bug_unit)
                 w_path = checkout_repo(bug_unit[0], repo_name)
+                print(w_path)
                 d4j_exporting(w_path)
-                run_fixja(w_path, bug_unit[2])
+                fixja_pre_run(w_path, bug_unit[2])
+                break
 
 
-def run_fixja(w_path, method_to_fix):
+def fixja_pre_run(w_path, method_to_fix):
     command = 'python3 fixja_d4j_pre.py ' + \
               w_path + ' ' + \
               w_path + ' "' + \
@@ -35,24 +39,34 @@ def run_fixja(w_path, method_to_fix):
     os.system(command)
 
 
-def d4j_exporting(w_path):
+def d4j_exporting(working_path):
     save_dir = os.getcwd()
-    os.chdir(w_path)
-    command = 'defects4j export -p tests.relevant -o ' + append_path(w_path, output_relevant_tests_file)
-    print(command)
-    os.system(command)
-    command = 'defects4j export -p cp.test -o ' + append_path(w_path, output_cp_test_file)
-    print(command)
-    os.system(command)
+    output = append_path(working_path, output_relevant_tests_file)
+    if not os.path.isfile(output):
+        os.chdir(working_path)
+        command = 'defects4j export -p tests.relevant -o ' + output
+        print(command)
+        os.system(command)
+    else:
+        print(output + ' is exist.')
+    output = append_path(working_path, output_cp_test_file)
+    if not os.path.isfile(output):
+        os.chdir(working_path)
+        command = 'defects4j export -p cp.test -o ' + output
+        print(command)
+        os.system(command)
+    else:
+        print(output + ' is exist.')
     os.chdir(save_dir)
 
 
 def checkout_repo(bug_id, repo_name):
-    working_path = '/tmp/' + repo_name + '_' + bug_id + '_buggy'
+    working_path = '/tmp/' + repo_name+bug_id
     command = 'defects4j checkout -p ' + repos[repo_name] + \
               ' -v ' + bug_id + 'b -w ' + working_path
     print(command)
     os.system(command)
+
     return working_path
 
 
@@ -73,7 +87,18 @@ def append_path(pre, post):
     return pre
 
 
-msr_output_path = './'
+def cp_repo(working_path):
+    new_working_path = '/root/test/msr_test/' + repo_folder
+    if not os.path.isdir(new_working_path):
+        os.mkdir(new_working_path)
+    else:
+        shutil.rmtree(new_working_path + repo_folder)
+    command = 'cp -r ' + working_path + ' ' + new_working_path
+    os.system(command)
+
+
+msr_output_path = './msr_out'
 for x in os.listdir(msr_output_path):  # go through all children in path
     x = msr_output_path + os.path.sep + x
-    read_log(x)
+    read_and_process_log(x)
+    break
