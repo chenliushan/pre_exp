@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import os
-import shutil
 
 # 1>Read the MSR output log
 # 2>Checkout the buggy rev
@@ -24,7 +23,7 @@ def read_and_process_log(log_path):
                 w_path = checkout_repo(bug_unit[0], repo_name)
                 print(w_path)
                 d4j_exporting(w_path)
-                fixja_pre_run(w_path, bug_unit[2])
+                fixja_pre_run(cp_repo(w_path), bug_unit[2])
                 break
 
 
@@ -61,7 +60,7 @@ def d4j_exporting(working_path):
 
 
 def checkout_repo(bug_id, repo_name):
-    working_path = '/tmp/' + repo_name+bug_id
+    working_path = append_path('/tmp/', repo_name + bug_id)
     command = 'defects4j checkout -p ' + repos[repo_name] + \
               ' -v ' + bug_id + 'b -w ' + working_path
     print(command)
@@ -88,13 +87,14 @@ def append_path(pre, post):
 
 
 def cp_repo(working_path):
-    new_working_path = '/root/test/msr_test/' + repo_folder
+    new_working_path = append_path('/root/test/msr_test/', repo_folder)
     if not os.path.isdir(new_working_path):
         os.mkdir(new_working_path)
-    else:
-        shutil.rmtree(new_working_path + repo_folder)
-    command = 'cp -r ' + working_path + ' ' + new_working_path
-    os.system(command)
+    if not os.path.isdir(append_path(new_working_path, working_path[working_path.rindex('/'):len(working_path)])):
+        command = 'cp -rf ' + working_path + ' ' + new_working_path
+        print(command)
+        os.system(command)
+    return append_path(new_working_path, working_path[working_path.rindex('/'):len(working_path)])
 
 
 msr_output_path = './msr_out'

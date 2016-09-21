@@ -23,6 +23,7 @@ p_Encoding = 'Encoding'
 p_sep = ' = '
 
 p_default_JDKDir = '/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java'
+p_default_JDKDir_mac = '/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home'
 p_default_sub_LogFile = '/fixja.log'
 p_default_LogLevel = 'DEBUG'
 p_default_ProjectSourceDir = 'src/main/java'
@@ -153,7 +154,8 @@ def generate_another_properties(file_path):
     another = open(new_file, 'w')
     file = open(file_path, 'r')
     content = file.read()
-    another.write(content.replace('/root', '/Users/liushanchen/Desktop'))
+    new_content=content.replace('/root', '/Users/liushanchen/Desktop')
+    another.write(new_content.replace(p_default_JDKDir,p_default_JDKDir_mac))
     another.close()
 
 
@@ -198,5 +200,5 @@ while cp is None:
 
 target_repo_name = get_repo_name(target_repo_path)
 property_file_path = generate_properties_file(property_file_path, target_repo_path, method_to_fix)
-# run_fixja(property_file_path)
+run_fixja(property_file_path)
 generate_another_properties(property_file_path)
