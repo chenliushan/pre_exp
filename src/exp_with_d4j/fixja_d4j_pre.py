@@ -1,6 +1,5 @@
 #! /usr/bin/env python3
 import os
-import shutil
 import sys
 
 p_JDKDir = 'JDKDir'
@@ -22,7 +21,7 @@ p_Encoding = 'Encoding'
 
 p_sep = ' = '
 
-p_default_JDKDir = '/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java'
+p_default_JDKDir = '/usr/lib/jvm/java-8-openjdk-amd64/'
 p_default_JDKDir_mac = '/Library/Java/JavaVirtualMachines/jdk1.8.0_31.jdk/Contents/Home'
 p_default_sub_LogFile = '/fixja.log'
 p_default_LogLevel = 'DEBUG'
@@ -145,6 +144,7 @@ def get_p_method_to_fix(method):
 def run_fixja(properties_file):
     command = '/usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -jar ' + \
               fixja_jar + ' ' + arg_propery + ' ' + properties_file
+    print(command)
     os.system(command)
 
 
@@ -154,8 +154,8 @@ def generate_another_properties(file_path):
     another = open(new_file, 'w')
     file = open(file_path, 'r')
     content = file.read()
-    new_content=content.replace('/root', '/Users/liushanchen/Desktop')
-    another.write(new_content.replace(p_default_JDKDir,p_default_JDKDir_mac))
+    new_content = content.replace('/root', '/Users/liushanchen/Desktop')
+    another.write(new_content.replace(p_default_JDKDir, p_default_JDKDir_mac))
     another.close()
 
 

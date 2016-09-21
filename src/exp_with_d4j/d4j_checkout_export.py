@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 import os
+import sys
 
 # 1>Read the MSR output log
 # 2>Checkout the buggy rev
@@ -17,14 +18,17 @@ def read_and_process_log(log_path):
         repo_name = get_repo_name(log_path)
         with open(log_path, 'r') as file:
             for line in file:
-                # the bug_unit[0] is bugID,bug_unit[1] is git revision code,bug_unit[2] is modified method
-                bug_unit = line.strip().split(';')
-                print(bug_unit)
-                w_path = checkout_repo(bug_unit[0], repo_name)
-                print(w_path)
-                d4j_exporting(w_path)
-                fixja_pre_run(cp_repo(w_path), bug_unit[2])
-                break
+                process_log_unit(line, repo_name)
+
+
+def process_log_unit(log_line, repo_name):
+    # the bug_unit[0] is bugID,bug_unit[1] is git revision code,bug_unit[2] is modified method
+    bug_unit = log_line.strip().split(';')
+    print(bug_unit)
+    w_path = checkout_repo(bug_unit[0], repo_name)
+    print(w_path)
+    d4j_exporting(w_path)
+    fixja_pre_run(cp_repo(w_path), bug_unit[2])
 
 
 def fixja_pre_run(w_path, method_to_fix):
@@ -97,8 +101,15 @@ def cp_repo(working_path):
     return append_path(new_working_path, working_path[working_path.rindex('/'):len(working_path)])
 
 
-msr_output_path = './msr_out'
-for x in os.listdir(msr_output_path):  # go through all children in path
-    x = msr_output_path + os.path.sep + x
-    read_and_process_log(x)
-    break
+# input:
+# example:py d4j_checkout_export.py commons-lang "38;e28c95ac2ce95852add84bdf3d2d9c00ac98f5de;org.apache.commons.lang3.time.FastDateFormat.format(Calendar,StringBuffer)"
+# arg1:repository name (one of the following) closure-compiler,commons-lang,commons-math,joda-time
+# arg2:log_line(bug_unit) e.g.: 19;a92450e88df85d6b7a0fa53517da46286c24f53f;org.joda.time.DateTimeZone.getOffsetFromLocal(long)
+if len(sys.argv) == 3:
+    process_log_unit(sys.argv[2], sys.argv[1])
+else:
+    msr_output_path = './msr_out'
+    for x in os.listdir(msr_output_path):  # go through all children in path
+        x = msr_output_path + os.path.sep + x
+        read_and_process_log(x)
+        break
