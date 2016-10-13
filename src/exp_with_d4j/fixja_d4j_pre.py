@@ -18,6 +18,7 @@ p_ProjectCompilationCommand = 'ProjectCompilationCommand'
 p_ProjectExecutionCommand = 'ProjectExecutionCommand'
 p_MethodToFix = 'MethodToFix'
 p_Encoding = 'Encoding'
+p_TargetJavaVersion = 'TargetJavaVersion'
 
 p_sep = ' = '
 
@@ -85,10 +86,11 @@ def generate_properties_file(file_path, repository_path, fix_method):  # generat
         tmp_cont = open(cp, 'r').read().split(os.pathsep)
         for line in tmp_cont:
             if 'classes' not in line and '/target/tests' not in line:
-                if line.endswith('junit-4.7.jar'):
-                    tmp_cp += '/root/test/defects4j_test/defects4j/framework/lib/junit-4.12.jar' + os.pathsep
+                # if line.endswith('junit-4.7.jar'):
+                if 'junit' in line:
+                    tmp_cp += '/root/exp_tools/defects4j/framework/lib/junit-4.12.jar' + os.pathsep
                 else:
-                    if os.path.isfile(line):
+                    if os.path.isfile(line) or os.path.isdir(line):
                         tmp_cp += line + os.pathsep
                     else:
                         print('classpath: ' + line + ' is not exist!!')

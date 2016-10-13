@@ -10,7 +10,8 @@ output_relevant_tests_file = 'out_relevant_tests.txt'
 output_cp_test_file = 'out_cp.txt'
 repo_folder = '/buggy_repo'
 repos = {'closure-compiler': 'Closure', 'commons-lang': 'Lang',
-         'commons-math': 'Math', 'joda-time': 'Time'}
+         'commons-math': 'Math', 'joda-time': 'Time',
+         'JFreechart':'Chart'}
 
 
 def read_and_process_log(log_path):
