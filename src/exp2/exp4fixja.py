@@ -5,21 +5,18 @@ import sys
 from handle_d4j import checkout_repo
 from my_util import append_path
 from prepare_fixja_properties_file import PROPERTY_FILE_NAME, generate_properties_file
-from read_config import read_config_file, find_method_to_fix
+from read_config import read_config_file, find_method_to_fix, CONFIG_FILE_NAME, p_JDKDir, p_FixjaDir, p_D4jDir
 
-DEFAULT_CONFIG_FILE = './fixja_exp.properties'
-p_JDKDir = 'JDKDir'
-p_FixjaDir = 'FixjaDir'
-p_D4jDir = 'D4jDir'
-
+DEFAULT_MSR_OUTPUTS = '../msr_out/'
+THIS_FILE_NAME = 'exp4fixja.py'
 FIXJA_ARG_PROPERY = '--FixjaSettingFile'
-
+WORKING_REPO_DIR = '/root/test/msr_test/buggy_repo1'
 STR_EXAMPLE = 'Example: '
 
 COMMAND_RUN = '-run'
 COMMAND_RUN_DESC = 'Run fixja to fix specific bug (repository name and bug id refer to Defects4J), ' \
                    'properties file will be prepared automatically.'
-COMMAND_RUN_SAMPLE = STR_EXAMPLE + COMMAND_RUN + ' closure 33'
+COMMAND_RUN_SAMPLE = STR_EXAMPLE + COMMAND_RUN + ' Closure 33'
 
 COMMAND_CHECKOUT_REPOSITORY = '-checkout'
 COMMAND_CHECKOUT_REPOSITORY_DESC = 'Checkout target version buggy repository through Defects4J.'
@@ -56,6 +53,9 @@ repositories = {'Closure': 'closure-compiler',
                 'Chart': 'JFreechart',
                 'Mockito': 'mockito'}
 
+expConfig = {}
+script_path = ''
+
 
 def print_help_msg():
     print("Help MSG:")
@@ -67,35 +67,32 @@ def print_help_msg():
     print(COMMAND_GENERATE, COMMAND_GENERATE_DESC, COMMAND_GENERATE_SAMPLE, '\n', sep='\n')
     print(COMMAND_RUN_MSR, COMMAND_RUN_MSR_DESC, COMMAND_RUN_MSR_SAMPLE, '\n', sep='\n')
     print(COMMAND_CONFIG_MSR, COMMAND_CONFIG_MSR_DESC, COMMAND_CONFIG_MSR_SAMPLE, '\n', sep='\n')
-
-
-def show_name():
-    print(repositories)
+    print("NOTE: The Java-home should be configured as Java7 to be compatible with Defects4J.")
 
 
 def show_config():
-    print("Config file path: ", os.path.abspath(DEFAULT_CONFIG_FILE))
-    print("Config: ", read_config_file(DEFAULT_CONFIG_FILE))
+    print("Config file path: ", os.path.abspath(script_path))
+    print("Config: ", expConfig)
 
 
 def clear():
     pass
 
 
-def checkout(repo_name, bug_id, d4j_path):
-    checkout_repo(repo_name, bug_id, d4j_path)
-
-
-def run_fixja(repository_path, repo_name, bug_id, d4j_path, jdk_path, fixja_path):
+def run_fixja(jdk_path, fixja_path, repo_name, bug_id, d4j_path):
+    repository_path = append_path(WORKING_REPO_DIR, repositories[repo_name] + bug_id)
     property_file_path = append_path(repository_path, PROPERTY_FILE_NAME)
-    method_to_fix = find_method_to_fix(repositories[repo_name], bug_id)
     if not os.path.isfile(property_file_path):
+        method_to_fix = find_method_to_fix(DEFAULT_MSR_OUTPUTS, repositories[repo_name], bug_id)
+        print('method_to_fix' + method_to_fix)
         generate_properties_file(repository_path, method_to_fix, d4j_path, jdk_path)
+    else:
+        print('Info: Using existing properties file.')
     run_(jdk_path, fixja_path, property_file_path)
 
 
 def run_(jdk_path, fixja_path, properties_file):
-    command = jdk_path + ' -jar ' + \
+    command = jdk_path + 'bin' + os.sep + 'java -jar ' + \
               fixja_path + ' ' + FIXJA_ARG_PROPERY + ' ' + properties_file
     print(command)
     os.system(command)
@@ -105,25 +102,38 @@ def generate_another_properties_file():
     pass
 
 
+def init_script_path():
+    py_path = append_path(os.getcwd(), sys.argv[0])
+    script_path = py_path[0:py_path.index(THIS_FILE_NAME)]
+    return script_path
+
+
 print(sys.argv)
+script_path = init_script_path()
+expConfig = read_config_file(append_path(script_path, CONFIG_FILE_NAME))
+os.chdir(script_path)
 if len(sys.argv) == 1:
     print_help_msg()
 elif len(sys.argv) == 2:
     if sys.argv[1] == COMMAND_SHOW_CONFIG:
         show_config()
     elif sys.argv[1] == COMMAND_SHOW_NAME:
-        show_name()
+        print(repositories)
+
     elif sys.argv[1] == COMMAND_CLEAR:
         clear()
     else:
         print_help_msg()
 elif len(sys.argv) == 4:
     if sys.argv[1] == COMMAND_RUN:
-        run_fixja()
+        run_fixja(expConfig[p_JDKDir], expConfig[p_FixjaDir], sys.argv[2], sys.argv[3], expConfig[p_D4jDir])
+
     elif sys.argv[1] == COMMAND_CHECKOUT_REPOSITORY:
-        checkout()
+        checkout_repo(WORKING_REPO_DIR, sys.argv[2], repositories[sys.argv[2]], sys.argv[3], expConfig[p_D4jDir])
+
     elif sys.argv[1] == COMMAND_GENERATE:
         generate_another_properties_file()
+
     else:
         print_help_msg()
 else:

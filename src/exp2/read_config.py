@@ -10,8 +10,8 @@ p_D4jDir = 'D4jDir'
 
 
 def read_config_file(config_path):  # Reading configuration for this script
-    if os.path.isfile(config_path) and config_path.endswith(CONFIG_FILE_NAME):
-        config_dict = {}
+    config_dict = {}
+    if os.path.isfile(config_path):
         with open(config_path, 'r') as file:
             for line in file:
                 if line.startswith(p_JDKDir):
@@ -56,11 +56,11 @@ def read_d4j_config_file(repo_path):  # Reading d4j build file of the target ves
 
 def find_method_to_fix(msr_output_path, repo_full_name, bug_id):  # Finding the target method from msr outputs
     for x_file in os.listdir(msr_output_path):  # go through all children in path
-        x_file = msr_output_path + os.path.sep + x_file
-        if x_file.startswith(repo_full_name) and os.path.isfile(x_file) and x_file.endswith('.log'):
-            with open(x_file, 'r') as file:
-                for line in file:
-                    bug_unit = line.strip().split(';')
-                    if bug_unit[0] == bug_id:
-                        print(bug_unit)
-                        return bug_unit[2]
+        if x_file.startswith(repo_full_name) and x_file.endswith('.log'):
+            x_file = append_path(msr_output_path, x_file)
+            if os.path.isfile(x_file):
+                with open(x_file, 'r') as file:
+                    for line in file:
+                        bug_unit = line.strip().split(';')
+                        if bug_unit[0] == bug_id:
+                            return bug_unit[2]

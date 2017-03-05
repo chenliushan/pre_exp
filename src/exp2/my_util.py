@@ -22,4 +22,5 @@ def cp_repo(working_path,
         command = 'cp -rf ' + working_path + ' ' + new_working_path
         print(command)
         os.system(command)
+        os.system('rm -r '+working_path)
     return append_path(new_working_path, working_path[working_path.rindex('/'):len(working_path)])
