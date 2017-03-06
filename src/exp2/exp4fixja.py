@@ -3,15 +3,18 @@ import os
 import sys
 
 from handle_d4j import checkout_repo
+from msr_process_d4j_bugs import run_msr, config_msr
 from my_util import append_path
 from prepare_fixja_properties_file import PROPERTY_FILE_NAME, generate_properties_file
 from read_config import read_config_file, find_method_to_fix, CONFIG_FILE_NAME, p_JDKDir, p_FixjaDir, p_D4jDir
 
-DEFAULT_MSR_OUTPUTS = '../msr_out/'
+DEFAULT_MSR_OUTPUTS = '../msr/msr_out/'
 THIS_FILE_NAME = 'exp4fixja.py'
 FIXJA_ARG_PROPERY = '--FixjaSettingFile'
-WORKING_REPO_DIR = '/root/test/msr_test/buggy_repo1'
-STR_EXAMPLE = 'Example: '
+WORKING_REPO_DIR = '../buggy_repo1'
+PROPERTY_FILES = '../property_files'
+MSR_MISC = '../msr/misc'
+STR_EXAMPLE = 'Example: exp4fixja.py '
 
 COMMAND_RUN = '-run'
 COMMAND_RUN_DESC = 'Run fixja to fix specific bug (repository name and bug id refer to Defects4J), ' \
@@ -38,11 +41,11 @@ COMMAND_GENERATE = '-newFJConfig'
 COMMAND_GENERATE_DESC = 'Generate a new fixja property file from an existing one'
 COMMAND_GENERATE_SAMPLE = STR_EXAMPLE + COMMAND_GENERATE + ' ./fixja.properties'
 
-COMMAND_RUN_MSR = '-runMSR '
+COMMAND_RUN_MSR = '-runMSR'
 COMMAND_RUN_MSR_DESC = 'Run msr. (If there are MSR output already, no need to run it again)'
 COMMAND_RUN_MSR_SAMPLE = STR_EXAMPLE + COMMAND_RUN_MSR
 
-COMMAND_CONFIG_MSR = '-configMSR '
+COMMAND_CONFIG_MSR = '-configMSR'
 COMMAND_CONFIG_MSR_DESC = 'generate the property file for MSR.'
 COMMAND_CONFIG_MSR_SAMPLE = STR_EXAMPLE + COMMAND_CONFIG_MSR
 
@@ -63,8 +66,8 @@ def print_help_msg():
     print(COMMAND_CHECKOUT_REPOSITORY, COMMAND_CHECKOUT_REPOSITORY_DESC, COMMAND_CHECKOUT_SAMPLE, '\n', sep='\n')
     print(COMMAND_SHOW_NAME, COMMAND_SHOW_NAME_DESC, COMMAND_SHOW_NAME_SAMPLE, '\n', sep='\n')
     print(COMMAND_SHOW_CONFIG, COMMAND_SHOW_CONFIG_DESC, COMMAND_SHOW_CONFIG_SAMPLE, '\n', sep='\n')
-    print(COMMAND_CLEAR, COMMAND_CLEAR_DESC, COMMAND_CLEAR_SAMPLE, '\n', sep='\n')
-    print(COMMAND_GENERATE, COMMAND_GENERATE_DESC, COMMAND_GENERATE_SAMPLE, '\n', sep='\n')
+    # print(COMMAND_CLEAR, COMMAND_CLEAR_DESC, COMMAND_CLEAR_SAMPLE, '\n', sep='\n')
+    # print(COMMAND_GENERATE, COMMAND_GENERATE_DESC, COMMAND_GENERATE_SAMPLE, '\n', sep='\n')
     print(COMMAND_RUN_MSR, COMMAND_RUN_MSR_DESC, COMMAND_RUN_MSR_SAMPLE, '\n', sep='\n')
     print(COMMAND_CONFIG_MSR, COMMAND_CONFIG_MSR_DESC, COMMAND_CONFIG_MSR_SAMPLE, '\n', sep='\n')
     print("NOTE: The Java-home should be configured as Java7 to be compatible with Defects4J.")
@@ -81,14 +84,29 @@ def clear():
 
 def run_fixja(jdk_path, fixja_path, repo_name, bug_id, d4j_path):
     repository_path = append_path(WORKING_REPO_DIR, repositories[repo_name] + bug_id)
+    if not os.path.isdir(repository_path):
+        checkout_repo(WORKING_REPO_DIR, repo_name, repositories[repo_name], bug_id, expConfig[p_D4jDir])
     property_file_path = append_path(repository_path, PROPERTY_FILE_NAME)
-    if not os.path.isfile(property_file_path):
+    if not os.path.isfile(property_file_path) and \
+            not get_properties_file(property_file_path, repo_name, bug_id):
         method_to_fix = find_method_to_fix(DEFAULT_MSR_OUTPUTS, repositories[repo_name], bug_id)
-        print('method_to_fix' + method_to_fix)
+        print('method_to_fix:' + method_to_fix)
+        print('repository_path:' + repository_path)
         generate_properties_file(repository_path, method_to_fix, d4j_path, jdk_path)
     else:
         print('Info: Using existing properties file.')
     run_(jdk_path, fixja_path, property_file_path)
+
+
+def get_properties_file(property_file_path, repo_name, bug_id):
+    file_name = 'fixja-' + repositories[repo_name] + bug_id + '.properties'
+    file = append_path(PROPERTY_FILES, file_name)
+    if os.path.isfile(file):
+        command = 'cp ' + file + ' ' + property_file_path
+        print(command)
+        os.system(command)
+        return 1
+    return 0
 
 
 def run_(jdk_path, fixja_path, properties_file):
@@ -119,9 +137,12 @@ elif len(sys.argv) == 2:
         show_config()
     elif sys.argv[1] == COMMAND_SHOW_NAME:
         print(repositories)
-
     elif sys.argv[1] == COMMAND_CLEAR:
         clear()
+    elif sys.argv[1] == COMMAND_RUN_MSR:
+        run_msr(MSR_MISC)
+    elif sys.argv[1] == COMMAND_CONFIG_MSR:
+        config_msr(MSR_MISC)
     else:
         print_help_msg()
 elif len(sys.argv) == 4:

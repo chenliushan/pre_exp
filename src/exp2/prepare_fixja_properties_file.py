@@ -40,8 +40,6 @@ def collect_classpath(repository_path, d4j_path):
         tmp_cont = open(program_cp, 'r').read().split(os.pathsep)
         for line in tmp_cont:
             if 'classes' not in line and '/target/tests' not in line:
-                print('line'+line)
-
                 # if line.endswith('junit-4.7.jar'):
                 if 'junit' in line:
                     collected_classpath += '/root/exp_tools/defects4j/framework/lib/junit-4.12.jar' + os.pathsep
@@ -60,7 +58,6 @@ def collect_test_to_include(repository_path, d4j_path):
     if test_to_include is not None and os.path.isfile(test_to_include):
         tmp_cont = open(test_to_include, 'r')
         for line in tmp_cont:
-            print('line'+line)
             collected_test += (line.strip() + os.pathsep)
         collected_test = collected_test[0:len(collected_test) - 1]
     return collected_test;
@@ -74,7 +71,11 @@ def get_p_method_to_fix(method):
     return method_to_fix
 
 
+
+
+
 def generate_properties_file(repository_path, fix_method, d4j_path, jdk_path):  # generate fixja properties file
+    repository_path = os.path.abspath(repository_path)
     property_file_path = append_path(repository_path, PROPERTY_FILE_NAME)
     print('property_file_path' + property_file_path)
 
