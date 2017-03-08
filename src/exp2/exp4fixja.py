@@ -150,6 +150,7 @@ elif len(sys.argv) == 2:
     elif sys.argv[1] == COMMAND_CONFIG_MSR:
         config_msr(MSR_MISC)
     elif sys.argv[1] == COMMAND_TRACK_RESULTS:
+        print('Processing ...')
         tracking_all_results(WORKING_REPO_DIR, TRACKING_RESULTS)
     else:
         print_help_msg()

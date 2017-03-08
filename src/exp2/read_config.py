@@ -70,10 +70,36 @@ def tracking_all_results(working_dir, new_output_dir):  # Finding all the experi
     for x_repo in os.listdir(working_dir):
         x_repo_dir = os.path.join(working_dir, x_repo)
         if os.path.isdir(x_repo_dir):  # go through all repo in working dir
+            print('Copying ' + x_repo + ' ...')
             for folder in os.listdir(x_repo_dir):
                 if folder == 'fixja_output':  # find the experiment output in repo
                     dst = os.path.join(new_output_dir, x_repo)
+                    if not os.path.isdir(dst):
+                        os.mkdir(dst)
                     o_output_dir = os.path.join(x_repo_dir, folder)
                     for exp_output in os.listdir(o_output_dir):
-                        if exp_output.endswith('.log'):
-                            copyfile(os.path.join(o_output_dir, exp_output), dst)
+                        src = os.path.join(o_output_dir, exp_output)
+                        if is_desired_size(src) and is_desired_name(exp_output):
+                            copyfile(src, os.path.join(dst, exp_output))
+                    break
+    print('tracking_all_results is done')
+
+
+def is_desired_name(file_name):
+    if file_name == 'evaluated_fix_actions.log' or \
+                    file_name == 'evaluated_snapshots.log' or \
+                    file_name == 'monitored_states.log' or \
+                    file_name == 'monitored_test_results.log' or \
+                    file_name == 'fixja.log' or \
+                    file_name == 'plausible_fix_actions.log' or \
+                    file_name == 'raw_fix_actions.log' or \
+                    file_name == 'snippets.log' or \
+                    file_name == 'test_cases_files.txt':
+        return 1
+    return 0
+
+
+def is_desired_size(path):
+    if os.path.getsize(path) < 10 ** 10:
+        return 1
+    return 0
