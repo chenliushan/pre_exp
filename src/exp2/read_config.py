@@ -1,6 +1,5 @@
 import os
-
-from my_util import append_path
+from shutil import copyfile
 
 CONFIG_FILE_NAME = 'fixja_exp.properties'
 
@@ -33,8 +32,8 @@ D4J_PROJECT_ID = 'd4j.project.id'
 D4J_TESTS_TRIGGER = 'd4j.tests.trigger'
 
 
-def read_d4j_config_file(repo_path):  # Reading d4j build file of the target vesion program
-    config_path = append_path(repo_path, D4J_BUILD_FILE_NAME)
+def read_d4j_config_file(repo_path):  # Reading d4j build file of the target version program
+    config_path = os.path.join(repo_path, D4J_BUILD_FILE_NAME)
     if os.path.isfile(config_path):
         config_dict = {}
         with open(config_path, 'r') as file:
@@ -57,10 +56,24 @@ def read_d4j_config_file(repo_path):  # Reading d4j build file of the target ves
 def find_method_to_fix(msr_output_path, repo_full_name, bug_id):  # Finding the target method from msr outputs
     for x_file in os.listdir(msr_output_path):  # go through all children in path
         if x_file.startswith(repo_full_name) and x_file.endswith('.log'):
-            x_file = append_path(msr_output_path, x_file)
+            x_file = os.path.join(msr_output_path, x_file)
             if os.path.isfile(x_file):
                 with open(x_file, 'r') as file:
                     for line in file:
                         bug_unit = line.strip().split(';')
                         if bug_unit[0] == bug_id:
                             return bug_unit[2]
+    return ''
+
+
+def tracking_all_results(working_dir, new_output_dir):  # Finding all the experiment results in the working dir
+    for x_repo in os.listdir(working_dir):
+        x_repo_dir = os.path.join(working_dir, x_repo)
+        if os.path.isdir(x_repo_dir):  # go through all repo in working dir
+            for folder in os.listdir(x_repo_dir):
+                if folder == 'fixja_output':  # find the experiment output in repo
+                    dst = os.path.join(new_output_dir, x_repo)
+                    o_output_dir = os.path.join(x_repo_dir, folder)
+                    for exp_output in os.listdir(o_output_dir):
+                        if exp_output.endswith('.log'):
+                            copyfile(os.path.join(o_output_dir, exp_output), dst)

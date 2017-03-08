@@ -4,16 +4,17 @@ import sys
 
 from handle_d4j import checkout_repo
 from msr_process_d4j_bugs import run_msr, config_msr
-from my_util import append_path
 from prepare_fixja_properties_file import PROPERTY_FILE_NAME, generate_properties_file
-from read_config import read_config_file, find_method_to_fix, CONFIG_FILE_NAME, p_JDKDir, p_FixjaDir, p_D4jDir
+from read_config import read_config_file, find_method_to_fix, tracking_all_results, CONFIG_FILE_NAME, p_JDKDir, \
+    p_FixjaDir, p_D4jDir
 
 DEFAULT_MSR_OUTPUTS = '../msr/msr_out/'
 THIS_FILE_NAME = 'exp4fixja.py'
 FIXJA_ARG_PROPERY = '--FixjaSettingFile'
-WORKING_REPO_DIR = '../buggy_repo1'
+WORKING_REPO_DIR = '../buggy_repo'
 PROPERTY_FILES = '../property_files'
 MSR_MISC = '../msr/misc'
+TRACKING_RESULTS = '../results'
 STR_EXAMPLE = 'Example: exp4fixja.py '
 
 COMMAND_RUN = '-run'
@@ -49,6 +50,10 @@ COMMAND_CONFIG_MSR = '-configMSR'
 COMMAND_CONFIG_MSR_DESC = 'generate the property file for MSR.'
 COMMAND_CONFIG_MSR_SAMPLE = STR_EXAMPLE + COMMAND_CONFIG_MSR
 
+COMMAND_TRACK_RESULTS = '-trackResult'
+COMMAND_TRACK_RESULTS_DESC = 'Copy all newest results into \'Results\' folder'
+COMMAND_TRACK_RESULTS_SAMPLE = STR_EXAMPLE + COMMAND_CONFIG_MSR
+
 repositories = {'Closure': 'closure-compiler',
                 'Lang': 'commons-lang',
                 'Math': 'commons-math',
@@ -70,6 +75,7 @@ def print_help_msg():
     # print(COMMAND_GENERATE, COMMAND_GENERATE_DESC, COMMAND_GENERATE_SAMPLE, '\n', sep='\n')
     print(COMMAND_RUN_MSR, COMMAND_RUN_MSR_DESC, COMMAND_RUN_MSR_SAMPLE, '\n', sep='\n')
     print(COMMAND_CONFIG_MSR, COMMAND_CONFIG_MSR_DESC, COMMAND_CONFIG_MSR_SAMPLE, '\n', sep='\n')
+    print(COMMAND_TRACK_RESULTS, COMMAND_TRACK_RESULTS_DESC, COMMAND_TRACK_RESULTS_SAMPLE, '\n', sep='\n')
     print("NOTE: The Java-home should be configured as Java7 to be compatible with Defects4J.")
 
 
@@ -83,10 +89,10 @@ def clear():
 
 
 def run_fixja(jdk_path, fixja_path, repo_name, bug_id, d4j_path):
-    repository_path = append_path(WORKING_REPO_DIR, repositories[repo_name] + bug_id)
+    repository_path = os.path.join(WORKING_REPO_DIR, repositories[repo_name] + bug_id)
     if not os.path.isdir(repository_path):
         checkout_repo(WORKING_REPO_DIR, repo_name, repositories[repo_name], bug_id, expConfig[p_D4jDir])
-    property_file_path = append_path(repository_path, PROPERTY_FILE_NAME)
+    property_file_path = os.path.join(repository_path, PROPERTY_FILE_NAME)
     if not os.path.isfile(property_file_path) and \
             not get_properties_file(property_file_path, repo_name, bug_id):
         method_to_fix = find_method_to_fix(DEFAULT_MSR_OUTPUTS, repositories[repo_name], bug_id)
@@ -100,7 +106,7 @@ def run_fixja(jdk_path, fixja_path, repo_name, bug_id, d4j_path):
 
 def get_properties_file(property_file_path, repo_name, bug_id):
     file_name = 'fixja-' + repositories[repo_name] + bug_id + '.properties'
-    file = append_path(PROPERTY_FILES, file_name)
+    file = os.path.join(PROPERTY_FILES, file_name)
     if os.path.isfile(file):
         command = 'cp ' + file + ' ' + property_file_path
         print(command)
@@ -121,14 +127,14 @@ def generate_another_properties_file():
 
 
 def init_script_path():
-    py_path = append_path(os.getcwd(), sys.argv[0])
+    py_path = os.path.join(os.getcwd(), sys.argv[0])
     script_path = py_path[0:py_path.index(THIS_FILE_NAME)]
     return script_path
 
 
 print(sys.argv)
 script_path = init_script_path()
-expConfig = read_config_file(append_path(script_path, CONFIG_FILE_NAME))
+expConfig = read_config_file(os.path.join(script_path, CONFIG_FILE_NAME))
 os.chdir(script_path)
 if len(sys.argv) == 1:
     print_help_msg()
@@ -143,6 +149,8 @@ elif len(sys.argv) == 2:
         run_msr(MSR_MISC)
     elif sys.argv[1] == COMMAND_CONFIG_MSR:
         config_msr(MSR_MISC)
+    elif sys.argv[1] == COMMAND_TRACK_RESULTS:
+        tracking_all_results(WORKING_REPO_DIR, TRACKING_RESULTS)
     else:
         print_help_msg()
 elif len(sys.argv) == 4:

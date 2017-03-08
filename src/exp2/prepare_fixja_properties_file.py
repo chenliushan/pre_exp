@@ -2,7 +2,6 @@
 import os
 
 from handle_d4j import exporting_cp, exporting_test
-from my_util import append_path
 from read_config import read_d4j_config_file, D4J_DIR_SRC_CLASSES, D4J_DIR_SRC_TESTS
 
 PROPERTY_FILE_NAME = 'fixja.properties'
@@ -71,18 +70,15 @@ def get_p_method_to_fix(method):
     return method_to_fix
 
 
-
-
-
 def generate_properties_file(repository_path, fix_method, d4j_path, jdk_path):  # generate fixja properties file
     repository_path = os.path.abspath(repository_path)
-    property_file_path = append_path(repository_path, PROPERTY_FILE_NAME)
+    property_file_path = os.path.join(repository_path, PROPERTY_FILE_NAME)
     print('property_file_path' + property_file_path)
 
     collected_classpath = collect_classpath(repository_path, d4j_path)
     tmp_test_to_include = collect_test_to_include(repository_path, d4j_path)
 
-    if '@' not in fix_method:
+    if '@' not in fix_method and fix_method != '':
         fix_method = get_p_method_to_fix(fix_method)
 
     d4j_build = read_d4j_config_file(repository_path)

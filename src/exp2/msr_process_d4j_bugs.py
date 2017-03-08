@@ -50,7 +50,7 @@ p_sep = ' = '
 
 def generate_properties_file(repo_name, db_path, target_folder):
     file_name = file_prefix + repo_name + file_suffix
-    file_path = append_path(target_folder, file_name)
+    file_path = os.path.join(target_folder, file_name)
     prop_file = open(file_path, 'w')
     content = p_OutputPath + p_sep + v_OutputPath + os.linesep + \
               p_RepoPath + p_sep + v_RepoPath + os.linesep + \

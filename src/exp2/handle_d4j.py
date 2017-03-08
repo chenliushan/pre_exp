@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 import os
 
-from my_util import append_path, cp_repo
+from my_util import cp_repo
 
 RELEVANT_TESTS_FILE_NAME = 'out_relevant_tests.txt'
 CP_TEST_FILE_NAME = 'out_cp.txt'
@@ -10,7 +10,7 @@ TMP_REPO_DIR = '/tmp/'
 
 
 def checkout_repo(target_folder, repo_name, repo_full_name, bug_id, d4j_path):
-    repo_path = append_path(TMP_REPO_DIR, repo_full_name + bug_id)
+    repo_path = os.path.join(TMP_REPO_DIR, repo_full_name + bug_id)
     command = d4j_path + ' checkout -p ' + repo_name + \
               ' -v ' + bug_id + 'b -w ' + repo_path
     print(command)
@@ -20,7 +20,7 @@ def checkout_repo(target_folder, repo_name, repo_full_name, bug_id, d4j_path):
 
 def exporting_test(working_path, d4j_path):
     save_dir = os.getcwd()
-    output = append_path(working_path, RELEVANT_TESTS_FILE_NAME)
+    output = os.path.join(working_path, RELEVANT_TESTS_FILE_NAME)
     if not os.path.isfile(output):
         os.chdir(working_path)
         command = d4j_path + ' export -p tests.relevant -o ' + output
@@ -34,7 +34,7 @@ def exporting_test(working_path, d4j_path):
 
 def exporting_cp(working_path, d4j_path):
     save_dir = os.getcwd()
-    output = append_path(working_path, CP_TEST_FILE_NAME)
+    output = os.path.join(working_path, CP_TEST_FILE_NAME)
     if not os.path.isfile(output):
         os.chdir(working_path)
         command = d4j_path + ' export -p cp.test -o ' + output
@@ -44,4 +44,3 @@ def exporting_cp(working_path, d4j_path):
         print('Warn: Exporting_test not executed,' + output + ' is exist.')
     os.chdir(save_dir)
     return output
-
