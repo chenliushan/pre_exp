@@ -55,14 +55,14 @@ def read_d4j_config_file(repo_path):  # Reading d4j build file of the target ver
 
 def find_method_to_fix(msr_output_path, repo_full_name, bug_id):  # Finding the target method from msr outputs
     for x_file in os.listdir(msr_output_path):  # go through all children in path
-        if x_file.startswith(repo_full_name) and x_file.endswith('.log'):
+        if x_file.startswith(repo_full_name) and x_file.endswith('-mtf.log'):
             x_file = os.path.join(msr_output_path, x_file)
             if os.path.isfile(x_file):
                 with open(x_file, 'r') as file:
                     for line in file:
                         bug_unit = line.strip().split(';')
                         if bug_unit[0] == bug_id:
-                            return bug_unit[2]
+                            return bug_unit[1]
     return ''
 
 

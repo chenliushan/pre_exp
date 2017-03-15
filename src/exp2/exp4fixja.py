@@ -8,7 +8,7 @@ from prepare_fixja_properties_file import PROPERTY_FILE_NAME, generate_propertie
 from read_config import read_config_file, find_method_to_fix, tracking_all_results, CONFIG_FILE_NAME, p_JDKDir, \
     p_FixjaDir, p_D4jDir
 
-DEFAULT_MSR_OUTPUTS = '../msr/msr_out/'
+DEFAULT_MSR_OUTPUTS = '../traversalbugs/summary'
 THIS_FILE_NAME = 'exp4fixja.py'
 FIXJA_ARG_PROPERY = '--FixjaSettingFile'
 WORKING_REPO_DIR = '../buggy_repo'
@@ -95,7 +95,7 @@ def run_fixja(jdk_path, fixja_path, repo_name, bug_id, d4j_path):
     property_file_path = os.path.join(repository_path, PROPERTY_FILE_NAME)
     if not os.path.isfile(property_file_path) and \
             not get_properties_file(property_file_path, repo_name, bug_id):
-        method_to_fix = find_method_to_fix(DEFAULT_MSR_OUTPUTS, repositories[repo_name], bug_id)
+        method_to_fix = find_method_to_fix(DEFAULT_MSR_OUTPUTS, repo_name, bug_id)
         print('method_to_fix:' + method_to_fix)
         print('repository_path:' + repository_path)
         generate_properties_file(repository_path, method_to_fix, d4j_path, jdk_path)
